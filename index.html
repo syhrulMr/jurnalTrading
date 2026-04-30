@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Simple Trading Journal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .card-value {
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .profit { color: #00ff88; }
+        .loss { color: #ff4466; }
+
+        .form-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-title {
+            font-size: 16px;
+            margin-bottom: 12px;
+            border-left: 3px solid #00d4ff;
+            padding-left: 10px;
+        }
+
+        .form-grid {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        input, select, textarea {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            padding: 8px 10px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        textarea {
+            min-width: 150px;
+            resize: vertical;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        button {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .btn-danger { background: linear-gradient(135deg, #ff4466, #cc0033); }
+        .btn-warning { background: linear-gradient(135deg, #ffaa00, #ff6600); }
+        .btn-success { background: linear-gradient(135deg, #00ff88, #009955); }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 280px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th, td {
+            padding: 8px 6px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            color: #00d4ff;
+        }
+
+        .badge-win { background: #00ff8822; color: #00ff88; padding: 2px 6px; border-radius: 12px; font-size: 11px; display: inline-block; }
+        .badge-loss { background: #ff446622; color: #ff4466; padding: 2px 6px; border-radius: 12px; font-size: 11px; display: inline-block; }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3px 6px;
+            font-size: 10px;
+            margin: 0 2px;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-bar input, .filter-bar select {
+            width: auto;
+            flex: 0;
+        }
+
+        .import-area {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .import-area input[type="file"] {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 6px;
+            font-size: 12px;
+        }
+
+        hr {
+            border-color: rgba(255, 255, 255, 0.1);
+            margin: 12px 0;
+        }
+
+        .desc-cell {
+            max-width: 180px;
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        small {
+            color: #888;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📊 SIMPLE TRADING JOURNAL</h1>
+
+    <!-- Dashboard -->
+    <div class="dashboard">
+        <div class="card"><div class="card-label">💰 MODAL</div><div class="card-value profit">$<span id="modalDisplay">0</span></div></div>
+        <div class="card"><div class="card-label">💵 EQUITY</div><div class="card-value profit">$<span id="equity">0</span></div></div>
+        <div class="card"><div class="card-label">📊 TOTAL</div><div class="card-value"><span id="totalTrade">0</span></div></div>
+        <div class="card"><div class="card-label">✅/❌</div><div class="card-value"><span id="win">0</span>/<span id="loss">0</span></div></div>
+        <div class="card"><div class="card-label">🏆 WINRATE</div><div class="card-value"><span id="winrate">0</span>%</div></div>
+        <div class="card"><div class="card-label">📈 TOTAL P&L</div><div class="card-value profit">$<span id="totalPnl">0</span></div></div>
+    </div>
+
+    <!-- Modal Input (Opsional) -->
+    <div class="form-section">
+        <div class="form-title">💰 MODAL AWAL (Opsional)</div>
+        <div class="form-grid">
+            <input type="number" id="modalInput" placeholder="Kosongkan jika tidak perlu" step="100">
+            <button onclick="setModal()">Set Modal</button>
+            <button onclick="resetModal()" class="btn-warning" style="background:#ff6600;">Reset ke 0</button>
+        </div>
+        <small>⚠️ Modal bisa dikosongkan (nilai 0). Equity = Modal + Total PnL</small>
+    </div>
+
+    <!-- Add Trade -->
+    <div class="form-section">
+        <div class="form-title">➕ ADD TRADE</div>
+        <div class="form-grid">
+            <input type="text" id="pair" placeholder="Pair" value="XAUUSD">
+            <select id="position">
+                <option value="Buy">📈 Buy</option>
+                <option value="Sell">📉 Sell</option>
+            </select>
+            <input type="number" id="pnl" placeholder="PnL ($)" step="0.01">
+            <textarea id="desc" placeholder="Catatan (opsional)..." rows="1" style="min-width: 150px;"></textarea>
+            <button onclick="addTrade()">➕ ADD</button>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-container">
+        <div class="form-title">📈 EQUITY GROWTH</div>
+        <canvas id="equityChart" width="800" height="280"></canvas>
+    </div>
+
+    <!-- Import/Export & Filter -->
+    <div class="filter-bar">
+        <div class="import-area">
+            <input type="file" id="csvFile" accept=".csv">
+            <button class="btn-success" onclick="importCSV()">📂 IMPORT</button>
+        </div>
+        <button class="btn-warning" onclick="exportData()">📥 EXPORT</button>
+        <button class="btn-danger" onclick="clearAllData()">🗑️ CLEAR</button>
+        <input type="text" id="filterPair" placeholder="Filter Pair" onkeyup="renderTable()" style="width:100px">
+        <select id="filterResult" onchange="renderTable()">
+            <option value="all">All</option>
+            <option value="win">Win</option>
+            <option value="loss">Loss</option>
+        </select>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+        <table>
+            <thead><tr><th>Pair</th><th>Pos</th><th>PnL</th><th>Result</th><th>Catatan</th><th>Date</th><th>Equity</th><th></th></tr></thead>
+            <tbody id="tradeTable"></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // DATA
+    let trades = JSON.parse(localStorage.getItem('simpleTrades')) || [];
+    let modal = parseFloat(localStorage.getItem('simpleModal')) || 0;
+    let chart;
+
+    function save() { localStorage.setItem('simpleTrades', JSON.stringify(trades)); localStorage.setItem('simpleModal', modal); }
+
+    function getEquityHistory() {
+        let eq = modal;
+        let history = [{ equity: eq, index: 0 }];
+        for (let i = 0; i < trades.length; i++) { eq += trades[i].pnl; history.push({ equity: eq, index: i + 1 }); }
+        return history;
+    }
+
+    function updateChart() {
+        let history = getEquityHistory();
+        if (chart) chart.destroy();
+        const ctx = document.getElementById('equityChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: history.map(h => h.index === 0 ? 'Start' : '#'.concat(h.index)), datasets: [{ label: 'Equity ($)', data: history.map(h => h.equity), borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.1)', fill: true, tension: 0.3 }] },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { tooltip: { callbacks: { label: (ctx) => '$' + ctx.raw.toFixed(2) } } }, scales: { y: { ticks: { callback: (v) => '$' + v } } } }
+        });
+    }
+
+    function updateDashboard() {
+        let total = trades.length, wins = trades.filter(t => t.pnl > 0).length, losses = trades.filter(t => t.pnl < 0).length;
+        let winrate = total === 0 ? 0 : ((wins / total) * 100).toFixed(1);
+        let totalPnl = trades.reduce((s, t) => s + t.pnl, 0);
+        let equity = modal + totalPnl;
+        document.getElementById('modalDisplay').innerText = modal.toFixed(2);
+        document.getElementById('equity').innerText = equity.toFixed(2);
+        document.getElementById('totalTrade').innerText = total;
+        document.getElementById('win').innerText = wins;
+        document.getElementById('loss').innerText = losses;
+        document.getElementById('winrate').innerText = winrate;
+        document.getElementById('totalPnl').innerHTML = (totalPnl >= 0 ? totalPnl.toFixed(2) : `<span class="loss">${totalPnl.toFixed(2)}</span>`);
+        if (totalPnl >= 0) document.getElementById('totalPnl').className = 'profit'; else document.getElementById('totalPnl').className = 'loss';
+    }
+
+    function renderTable() {
+        let filterPair = document.getElementById('filterPair').value.toLowerCase();
+        let filterResult = document.getElementById('filterResult').value;
+        let filtered = trades.filter(t => (filterPair === '' || t.pair.toLowerCase().includes(filterPair)) && (filterResult === 'all' || (filterResult === 'win' && t.pnl > 0) || (filterResult === 'loss' && t.pnl < 0)));
+        let tbody = document.getElementById('tradeTable');
+        if (filtered.length === 0) { tbody.innerHTML = '<td><td colspan="8">No trades<td></tr>'; return; }
+        let running = modal, eqAt = [];
+        for (let i = 0; i < trades.length; i++) { running += trades[i].pnl; eqAt.push(running); }
+        tbody.innerHTML = filtered.map(t => { let idx = trades.findIndex(x => x.id === t.id); let eq = idx >= 0 ? eqAt[idx] : modal; let cls = t.pnl > 0 ? 'badge-win' : 'badge-loss', txt = t.pnl > 0 ? 'WIN' : (t.pnl < 0 ? 'LOSS' : 'BE'); return `<tr><td>${t.pair}</td><td>${t.position}</td><td class="${t.pnl > 0 ? 'profit' : 'loss'}">$${t.pnl.toFixed(2)}</td><td><span class="${cls}">${txt}</span></td><td class="desc-cell">${t.desc || '-'}</td><td>${t.date}</td><td>$${eq.toFixed(2)}</td><td><button class="action-btn" onclick="deleteTrade(${t.id})">🗑️</button></td></tr>`; }).join('');
+    }
+
+    function setModal() { let v = parseFloat(document.getElementById('modalInput').value); if (!isNaN(v) && v >= 0) modal = v; save(); updateDashboard(); updateChart(); renderTable(); document.getElementById('modalInput').value = ''; }
+    function resetModal() { modal = 0; save(); updateDashboard(); updateChart(); renderTable(); }
+
+    function addTrade() {
+        let pair = document.getElementById('pair').value.trim();
+        let position = document.getElementById('position').value;
+        let pnl = parseFloat(document.getElementById('pnl').value);
+        let desc = document.getElementById('desc').value.trim();
+        if (!pair || isNaN(pnl)) { alert('Isi Pair dan PnL!'); return; }
+        trades.push({ id: Date.now(), pair, position, pnl, desc: desc || '', date: new Date().toLocaleString() });
+        save();
+        document.getElementById('pnl').value = ''; document.getElementById('desc').value = '';
+        updateDashboard(); updateChart(); renderTable();
+    }
+
+    function deleteTrade(id) { trades = trades.filter(t => t.id !== id); save(); updateDashboard(); updateChart(); renderTable(); }
+    function clearAllData() { if (confirm('Hapus semua data?')) { trades = []; modal = 0; save(); updateDashboard(); updateChart(); renderTable(); } }
+
+    function exportData() {
+        if (!trades.length) { alert('Tidak ada data'); return; }
+        let csv = "Pair,Position,PnL,Result,Deskripsi,Date\n";
+        trades.forEach(t => { let res = t.pnl > 0 ? "Win" : (t.pnl < 0 ? "Loss" : "BE"); csv += `${t.pair},${t.position},${t.pnl},${res},"${(t.desc || '').replace(/,/g,';')}",${t.date}\n`; });
+        let a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `journal_${Date.now()}.csv`; a.click(); URL.revokeObjectURL(a.href);
+    }
+
+    function importCSV() {
+        let file = document.getElementById('csvFile').files[0];
+        if (!file) { alert('Pilih file CSV'); return; }
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            let lines = e.target.result.split('\n');
+            let newTrades = [];
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                let parts = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
+                if (parts && parts.length >= 3) {
+                    let pair = (parts[0] || '').replace(/"/g, '').trim();
+                    let position = (parts[1] || '').replace(/"/g, '').trim();
+                    let pnl = parseFloat(parts[2]);
+                    let desc = (parts[4] || '').replace(/"/g, '').trim();
+                    if (pair && !isNaN(pnl)) newTrades.push({ id: Date.now() + i, pair, position: position === 'Buy' ? 'Buy' : 'Sell', pnl, desc: desc || '', date: parts[5] ? parts[5].replace(/"/g, '') : new Date().toLocaleString() });
+                }
+            }
+            if (newTrades.length) { trades = [...newTrades, ...trades]; save(); updateDashboard(); updateChart(); renderTable(); alert(`Import ${newTrades.length} trade`); document.getElementById('csvFile').value = ''; }
+            else alert('Tidak ada data valid');
+        };
+        reader.readAsText(file);
+    }
+
+    updateDashboard(); updateChart(); renderTable();
+</script>
+</body>
+</html>
