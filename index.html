@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📊 Simple Trading Journal</title>
+    <title>📊 Complete Trading Journal + Deposit</title>
     <style>
         * {
             margin: 0;
@@ -25,7 +25,7 @@
 
         h1 {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             font-size: 1.8em;
             background: linear-gradient(135deg, #00d4ff, #7b2cbf);
             -webkit-background-clip: text;
@@ -34,8 +34,8 @@
 
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
             margin-bottom: 20px;
         }
 
@@ -43,25 +43,27 @@
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             border-radius: 12px;
-            padding: 12px;
+            padding: 10px;
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .card-label {
-            font-size: 11px;
+            font-size: 10px;
             color: #888;
             text-transform: uppercase;
         }
 
         .card-value {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
-            margin-top: 5px;
+            margin-top: 4px;
         }
 
         .profit { color: #00ff88; }
         .loss { color: #ff4466; }
+        .deposit { color: #00d4ff; }
+        .withdraw { color: #ffaa00; }
 
         .form-section {
             background: rgba(255, 255, 255, 0.05);
@@ -71,15 +73,15 @@
         }
 
         .form-title {
-            font-size: 16px;
-            margin-bottom: 12px;
+            font-size: 15px;
+            margin-bottom: 10px;
             border-left: 3px solid #00d4ff;
             padding-left: 10px;
         }
 
         .form-grid {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
@@ -122,6 +124,8 @@
         .btn-danger { background: linear-gradient(135deg, #ff4466, #cc0033); }
         .btn-warning { background: linear-gradient(135deg, #ffaa00, #ff6600); }
         .btn-success { background: linear-gradient(135deg, #00ff88, #009955); }
+        .btn-deposit { background: linear-gradient(135deg, #00d4ff, #0088aa); }
+        .btn-withdraw { background: linear-gradient(135deg, #ffaa00, #cc8800); }
 
         .chart-container {
             background: rgba(255, 255, 255, 0.05);
@@ -158,8 +162,10 @@
             color: #00d4ff;
         }
 
-        .badge-win { background: #00ff8822; color: #00ff88; padding: 2px 6px; border-radius: 12px; font-size: 11px; display: inline-block; }
-        .badge-loss { background: #ff446622; color: #ff4466; padding: 2px 6px; border-radius: 12px; font-size: 11px; display: inline-block; }
+        .badge-win { background: #00ff8822; color: #00ff88; padding: 2px 6px; border-radius: 12px; font-size: 10px; display: inline-block; }
+        .badge-loss { background: #ff446622; color: #ff4466; padding: 2px 6px; border-radius: 12px; font-size: 10px; display: inline-block; }
+        .badge-deposit { background: #00d4ff22; color: #00d4ff; padding: 2px 6px; border-radius: 12px; font-size: 10px; display: inline-block; }
+        .badge-withdraw { background: #ffaa0022; color: #ffaa00; padding: 2px 6px; border-radius: 12px; font-size: 10px; display: inline-block; }
 
         .action-btn {
             background: rgba(255, 255, 255, 0.1);
@@ -188,10 +194,10 @@
             flex-wrap: wrap;
         }
 
-        .import-area input[type="file"] {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 6px;
-            font-size: 12px;
+        .small-note {
+            font-size: 11px;
+            color: #888;
+            margin-top: 8px;
         }
 
         hr {
@@ -199,45 +205,46 @@
             margin: 12px 0;
         }
 
-        .desc-cell {
-            max-width: 180px;
-            white-space: normal;
-            word-break: break-word;
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
         }
-
-        small {
-            color: #888;
-            font-size: 11px;
+        .tab-btn {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>📊 SIMPLE TRADING JOURNAL</h1>
+    <h1>📊 COMPLETE TRADING JOURNAL</h1>
 
     <!-- Dashboard -->
     <div class="dashboard">
         <div class="card"><div class="card-label">💰 MODAL</div><div class="card-value profit">$<span id="modalDisplay">0</span></div></div>
         <div class="card"><div class="card-label">💵 EQUITY</div><div class="card-value profit">$<span id="equity">0</span></div></div>
-        <div class="card"><div class="card-label">📊 TOTAL</div><div class="card-value"><span id="totalTrade">0</span></div></div>
+        <div class="card"><div class="card-label">📊 TOTAL TRADE</div><div class="card-value"><span id="totalTrade">0</span></div></div>
         <div class="card"><div class="card-label">✅/❌</div><div class="card-value"><span id="win">0</span>/<span id="loss">0</span></div></div>
         <div class="card"><div class="card-label">🏆 WINRATE</div><div class="card-value"><span id="winrate">0</span>%</div></div>
-        <div class="card"><div class="card-label">📈 TOTAL P&L</div><div class="card-value profit">$<span id="totalPnl">0</span></div></div>
+        <div class="card"><div class="card-label">📈 P&L TRADING</div><div class="card-value" id="tradingPnl">$0</div></div>
+        <div class="card"><div class="card-label">💰 NET DEPOSIT</div><div class="card-value deposit" id="netDeposit">$0</div></div>
     </div>
 
-    <!-- Modal Input (Opsional) -->
-    <div class="form-section">
-        <div class="form-title">💰 MODAL AWAL (Opsional)</div>
-        <div class="form-grid">
-            <input type="number" id="modalInput" placeholder="Kosongkan jika tidak perlu" step="100">
-            <button onclick="setModal()">Set Modal</button>
-            <button onclick="resetModal()" class="btn-warning" style="background:#ff6600;">Reset ke 0</button>
-        </div>
-        <small>⚠️ Modal bisa dikosongkan (nilai 0). Equity = Modal + Total PnL</small>
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab-btn active" onclick="showTab('trade')">📈 ADD TRADE</div>
+        <div class="tab-btn" onclick="showTab('deposit')">💰 DEPOSIT / WITHDRAW</div>
+        <div class="tab-btn" onclick="showTab('modal')">⚙️ SET MODAL</div>
     </div>
 
-    <!-- Add Trade -->
-    <div class="form-section">
+    <!-- Tab Trade -->
+    <div id="tab-trade" class="form-section">
         <div class="form-title">➕ ADD TRADE</div>
         <div class="form-grid">
             <input type="text" id="pair" placeholder="Pair" value="XAUUSD">
@@ -246,14 +253,40 @@
                 <option value="Sell">📉 Sell</option>
             </select>
             <input type="number" id="pnl" placeholder="PnL ($)" step="0.01">
-            <textarea id="desc" placeholder="Catatan (opsional)..." rows="1" style="min-width: 150px;"></textarea>
-            <button onclick="addTrade()">➕ ADD</button>
+            <textarea id="desc" placeholder="Catatan / setup (opsional)..." rows="1" style="min-width: 180px;"></textarea>
+            <button onclick="addTrade()">➕ ADD TRADE</button>
         </div>
+    </div>
+
+    <!-- Tab Deposit/Withdraw -->
+    <div id="tab-deposit" class="form-section" style="display:none">
+        <div class="form-title">💰 DEPOSIT / WITHDRAW</div>
+        <div class="form-grid">
+            <select id="txType">
+                <option value="deposit">💵 DEPOSIT (Tambah Modal)</option>
+                <option value="withdraw">🏧 WITHDRAW (Tarik Modal)</option>
+            </select>
+            <input type="number" id="amount" placeholder="Jumlah ($)" step="10">
+            <textarea id="txDesc" placeholder="Catatan (bank, transfer, dll)..." rows="1" style="min-width: 180px;"></textarea>
+            <button class="btn-deposit" onclick="addTransaction()">✅ PROCESS</button>
+        </div>
+        <div class="small-note">💡 Deposit menambah modal, Withdraw mengurangi modal. Tidak mempengaruhi statistik trading.</div>
+    </div>
+
+    <!-- Tab Modal Awal -->
+    <div id="tab-modal" class="form-section" style="display:none">
+        <div class="form-title">⚙️ MODAL AWAL</div>
+        <div class="form-grid">
+            <input type="number" id="modalInput" placeholder="Modal awal" step="100">
+            <button onclick="setModal()">Set Modal</button>
+            <button onclick="resetModal()" class="btn-warning">Reset ke 0</button>
+        </div>
+        <div class="small-note">⚠️ Modal awal hanya untuk inisiasi. Gunakan DEPOSIT untuk tambah modal rutin.</div>
     </div>
 
     <!-- Chart -->
     <div class="chart-container">
-        <div class="form-title">📈 EQUITY GROWTH</div>
+        <div class="form-title">📈 EQUITY GROWTH (Modal + Deposit - Withdraw + PnL Trading)</div>
         <canvas id="equityChart" width="800" height="280"></canvas>
     </div>
 
@@ -264,126 +297,219 @@
             <button class="btn-success" onclick="importCSV()">📂 IMPORT</button>
         </div>
         <button class="btn-warning" onclick="exportData()">📥 EXPORT</button>
-        <button class="btn-danger" onclick="clearAllData()">🗑️ CLEAR</button>
+        <button class="btn-danger" onclick="clearAllData()">🗑️ CLEAR ALL</button>
         <input type="text" id="filterPair" placeholder="Filter Pair" onkeyup="renderTable()" style="width:100px">
         <select id="filterResult" onchange="renderTable()">
-            <option value="all">All</option>
-            <option value="win">Win</option>
-            <option value="loss">Loss</option>
+            <option value="all">All Types</option>
+            <option value="trade">Trades Only</option>
+            <option value="deposit">Deposit Only</option>
+            <option value="withdraw">Withdraw Only</option>
         </select>
     </div>
 
     <!-- Table -->
     <div class="table-container">
         <table>
-            <thead><tr><th>Pair</th><th>Pos</th><th>PnL</th><th>Result</th><th>Catatan</th><th>Date</th><th>Equity</th><th></th></tr></thead>
-            <tbody id="tradeTable"></tbody>
+            <thead><tr><th>Type</th><th>Pair/Desc</th><th>Detail</th><th>Amount</th><th>Impact</th><th>Date</th><th>Equity</th><th></th></tr></thead>
+            <tbody id="transactionTable"></tbody>
         </table>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-    // DATA
-    let trades = JSON.parse(localStorage.getItem('simpleTrades')) || [];
-    let modal = parseFloat(localStorage.getItem('simpleModal')) || 0;
+    // DATA STRUCTURE
+    let transactions = JSON.parse(localStorage.getItem('completeTransactions')) || [];
+    let initialModal = parseFloat(localStorage.getItem('initialModal')) || 0;
     let chart;
 
-    function save() { localStorage.setItem('simpleTrades', JSON.stringify(trades)); localStorage.setItem('simpleModal', modal); }
-
-    function getEquityHistory() {
-        let eq = modal;
-        let history = [{ equity: eq, index: 0 }];
-        for (let i = 0; i < trades.length; i++) { eq += trades[i].pnl; history.push({ equity: eq, index: i + 1 }); }
+    // Helper untuk equity history
+    function calculateEquityHistory() {
+        let currentEquity = initialModal;
+        let history = [{ equity: currentEquity, type: 'start' }];
+        for (let i = 0; i < transactions.length; i++) {
+            let tx = transactions[i];
+            if (tx.type === 'deposit') currentEquity += tx.amount;
+            else if (tx.type === 'withdraw') currentEquity -= tx.amount;
+            else if (tx.type === 'trade') currentEquity += tx.pnl;
+            history.push({ equity: currentEquity, tx: tx, index: i + 1 });
+        }
         return history;
     }
 
     function updateChart() {
-        let history = getEquityHistory();
+        let history = calculateEquityHistory();
         if (chart) chart.destroy();
         const ctx = document.getElementById('equityChart').getContext('2d');
         chart = new Chart(ctx, {
             type: 'line',
-            data: { labels: history.map(h => h.index === 0 ? 'Start' : '#'.concat(h.index)), datasets: [{ label: 'Equity ($)', data: history.map(h => h.equity), borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.1)', fill: true, tension: 0.3 }] },
+            data: { 
+                labels: history.map((h, idx) => idx === 0 ? 'Start' : `#${idx}`),
+                datasets: [{ label: 'Equity ($)', data: history.map(h => h.equity), borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.1)', fill: true, tension: 0.3 }]
+            },
             options: { responsive: true, maintainAspectRatio: true, plugins: { tooltip: { callbacks: { label: (ctx) => '$' + ctx.raw.toFixed(2) } } }, scales: { y: { ticks: { callback: (v) => '$' + v } } } }
         });
     }
 
     function updateDashboard() {
-        let total = trades.length, wins = trades.filter(t => t.pnl > 0).length, losses = trades.filter(t => t.pnl < 0).length;
-        let winrate = total === 0 ? 0 : ((wins / total) * 100).toFixed(1);
-        let totalPnl = trades.reduce((s, t) => s + t.pnl, 0);
-        let equity = modal + totalPnl;
-        document.getElementById('modalDisplay').innerText = modal.toFixed(2);
-        document.getElementById('equity').innerText = equity.toFixed(2);
-        document.getElementById('totalTrade').innerText = total;
-        document.getElementById('win').innerText = wins;
-        document.getElementById('loss').innerText = losses;
-        document.getElementById('winrate').innerText = winrate;
-        document.getElementById('totalPnl').innerHTML = (totalPnl >= 0 ? totalPnl.toFixed(2) : `<span class="loss">${totalPnl.toFixed(2)}</span>`);
-        if (totalPnl >= 0) document.getElementById('totalPnl').className = 'profit'; else document.getElementById('totalPnl').className = 'loss';
+        let trades = transactions.filter(t => t.type === 'trade');
+        let totalTrades = trades.length;
+        let wins = trades.filter(t => t.pnl > 0).length;
+        let losses = trades.filter(t => t.pnl < 0).length;
+        let winrate = totalTrades === 0 ? 0 : ((wins / totalTrades) * 100).toFixed(1);
+        let tradingPnl = trades.reduce((s, t) => s + t.pnl, 0);
+        
+        let totalDeposit = transactions.filter(t => t.type === 'deposit').reduce((s, t) => s + t.amount, 0);
+        let totalWithdraw = transactions.filter(t => t.type === 'withdraw').reduce((s, t) => s + t.amount, 0);
+        let netDeposit = totalDeposit - totalWithdraw;
+        
+        let currentEquity = initialModal + tradingPnl + netDeposit;
+        
+        document.getElementById('modalDisplay').innerHTML = initialModal.toFixed(2);
+        document.getElementById('equity').innerHTML = currentEquity.toFixed(2);
+        document.getElementById('totalTrade').innerHTML = totalTrades;
+        document.getElementById('win').innerHTML = wins;
+        document.getElementById('loss').innerHTML = losses;
+        document.getElementById('winrate').innerHTML = winrate;
+        document.getElementById('tradingPnl').innerHTML = (tradingPnl >= 0 ? `$${tradingPnl.toFixed(2)}` : `-$${Math.abs(tradingPnl).toFixed(2)}`);
+        document.getElementById('tradingPnl').className = tradingPnl >= 0 ? 'profit' : 'loss';
+        document.getElementById('netDeposit').innerHTML = `$${netDeposit.toFixed(2)}`;
+        document.getElementById('netDeposit').className = netDeposit >= 0 ? 'deposit' : 'withdraw';
     }
 
     function renderTable() {
         let filterPair = document.getElementById('filterPair').value.toLowerCase();
         let filterResult = document.getElementById('filterResult').value;
-        let filtered = trades.filter(t => (filterPair === '' || t.pair.toLowerCase().includes(filterPair)) && (filterResult === 'all' || (filterResult === 'win' && t.pnl > 0) || (filterResult === 'loss' && t.pnl < 0)));
-        let tbody = document.getElementById('tradeTable');
-        if (filtered.length === 0) { tbody.innerHTML = '<td><td colspan="8">No trades<td></tr>'; return; }
-        let running = modal, eqAt = [];
-        for (let i = 0; i < trades.length; i++) { running += trades[i].pnl; eqAt.push(running); }
-        tbody.innerHTML = filtered.map(t => { let idx = trades.findIndex(x => x.id === t.id); let eq = idx >= 0 ? eqAt[idx] : modal; let cls = t.pnl > 0 ? 'badge-win' : 'badge-loss', txt = t.pnl > 0 ? 'WIN' : (t.pnl < 0 ? 'LOSS' : 'BE'); return `<tr><td>${t.pair}</td><td>${t.position}</td><td class="${t.pnl > 0 ? 'profit' : 'loss'}">$${t.pnl.toFixed(2)}</td><td><span class="${cls}">${txt}</span></td><td class="desc-cell">${t.desc || '-'}</td><td>${t.date}</td><td>$${eq.toFixed(2)}</td><td><button class="action-btn" onclick="deleteTrade(${t.id})">🗑️</button></td></tr>`; }).join('');
+        
+        let filtered = transactions.filter(t => {
+            if (filterResult === 'trade' && t.type !== 'trade') return false;
+            if (filterResult === 'deposit' && t.type !== 'deposit') return false;
+            if (filterResult === 'withdraw' && t.type !== 'withdraw') return false;
+            if (filterPair && t.type === 'trade') return t.pair.toLowerCase().includes(filterPair);
+            return true;
+        });
+        
+        let history = calculateEquityHistory();
+        let tbody = document.getElementById('transactionTable');
+        if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="8">No records</td></tr>'; return; }
+        
+        tbody.innerHTML = filtered.map((tx, idx) => {
+            let equityAtTx = 0;
+            let histIdx = history.findIndex(h => h.tx && h.tx.id === tx.id);
+            if (histIdx >= 0) equityAtTx = history[histIdx].equity;
+            
+            if (tx.type === 'trade') {
+                let cls = tx.pnl > 0 ? 'badge-win' : 'badge-loss';
+                let txt = tx.pnl > 0 ? 'WIN' : 'LOSS';
+                return `<tr>
+                    <td><span class="badge-win" style="background:#7b2cbf22;color:#7b2cbf">📊 TRADE</span></td>
+                    <td>${tx.pair}</td>
+                    <td>${tx.position}</td>
+                    <td class="${tx.pnl > 0 ? 'profit' : 'loss'}">$${tx.pnl.toFixed(2)}</td>
+                    <td><span class="${cls}">${txt}</span> ${tx.desc ? '<br><small>' + tx.desc + '</small>' : ''}</td>
+                    <td>${tx.date}</td>
+                    <td>$${equityAtTx.toFixed(2)}</td>
+                    <td><button class="action-btn" onclick="deleteTx(${tx.id})">🗑️</button></td>
+                </tr>`;
+            } else {
+                let badge = tx.type === 'deposit' ? 'badge-deposit' : 'badge-withdraw';
+                let sign = tx.type === 'deposit' ? '+' : '-';
+                let colorClass = tx.type === 'deposit' ? 'deposit' : 'withdraw';
+                return `<tr>
+                    <td><span class="${badge}">💰 ${tx.type.toUpperCase()}</span></td>
+                    <td colspan="2">${tx.desc || '-'}</td>
+                    <td class="${colorClass}">${sign}$${Math.abs(tx.amount).toFixed(2)}</td>
+                    <td>${tx.type === 'deposit' ? 'Tambah Modal' : 'Kurang Modal'}</td>
+                    <td>${tx.date}</td>
+                    <td>$${equityAtTx.toFixed(2)}</td>
+                    <td><button class="action-btn" onclick="deleteTx(${tx.id})">🗑️</button></td>
+                </tr>`;
+            }
+        }).join('');
     }
 
-    function setModal() { let v = parseFloat(document.getElementById('modalInput').value); if (!isNaN(v) && v >= 0) modal = v; save(); updateDashboard(); updateChart(); renderTable(); document.getElementById('modalInput').value = ''; }
-    function resetModal() { modal = 0; save(); updateDashboard(); updateChart(); renderTable(); }
-
+    function save() { localStorage.setItem('completeTransactions', JSON.stringify(transactions)); localStorage.setItem('initialModal', initialModal); }
+    
     function addTrade() {
         let pair = document.getElementById('pair').value.trim();
         let position = document.getElementById('position').value;
         let pnl = parseFloat(document.getElementById('pnl').value);
         let desc = document.getElementById('desc').value.trim();
         if (!pair || isNaN(pnl)) { alert('Isi Pair dan PnL!'); return; }
-        trades.push({ id: Date.now(), pair, position, pnl, desc: desc || '', date: new Date().toLocaleString() });
+        transactions.push({ id: Date.now(), type: 'trade', pair, position, pnl, desc: desc || '', date: new Date().toLocaleString() });
         save();
         document.getElementById('pnl').value = ''; document.getElementById('desc').value = '';
         updateDashboard(); updateChart(); renderTable();
     }
-
-    function deleteTrade(id) { trades = trades.filter(t => t.id !== id); save(); updateDashboard(); updateChart(); renderTable(); }
-    function clearAllData() { if (confirm('Hapus semua data?')) { trades = []; modal = 0; save(); updateDashboard(); updateChart(); renderTable(); } }
-
+    
+    function addTransaction() {
+        let type = document.getElementById('txType').value;
+        let amount = parseFloat(document.getElementById('amount').value);
+        let desc = document.getElementById('txDesc').value.trim();
+        if (isNaN(amount) || amount <= 0) { alert('Masukkan jumlah yang valid!'); return; }
+        transactions.push({ id: Date.now(), type: type, amount: amount, desc: desc || '', date: new Date().toLocaleString() });
+        save();
+        document.getElementById('amount').value = ''; document.getElementById('txDesc').value = '';
+        updateDashboard(); updateChart(); renderTable();
+    }
+    
+    function deleteTx(id) { transactions = transactions.filter(t => t.id !== id); save(); updateDashboard(); updateChart(); renderTable(); }
+    
+    function setModal() { let v = parseFloat(document.getElementById('modalInput').value); if (!isNaN(v) && v >= 0) { initialModal = v; save(); updateDashboard(); updateChart(); renderTable(); } document.getElementById('modalInput').value = ''; }
+    function resetModal() { initialModal = 0; save(); updateDashboard(); updateChart(); renderTable(); }
+    
+    function clearAllData() { if (confirm('Hapus SEMUA data? Tidak bisa dibatalkan!')) { transactions = []; initialModal = 0; save(); updateDashboard(); updateChart(); renderTable(); } }
+    
     function exportData() {
-        if (!trades.length) { alert('Tidak ada data'); return; }
-        let csv = "Pair,Position,PnL,Result,Deskripsi,Date\n";
-        trades.forEach(t => { let res = t.pnl > 0 ? "Win" : (t.pnl < 0 ? "Loss" : "BE"); csv += `${t.pair},${t.position},${t.pnl},${res},"${(t.desc || '').replace(/,/g,';')}",${t.date}\n`; });
+        if (!transactions.length) { alert('Tidak ada data'); return; }
+        let csv = "Type,Pair,Position,PnL,Amount,Deskripsi,Date\n";
+        transactions.forEach(t => {
+            if (t.type === 'trade') csv += `${t.type},${t.pair},${t.position},${t.pnl},,"${(t.desc || '').replace(/,/g,';')}",${t.date}\n`;
+            else csv += `${t.type},,,,${t.amount},"${(t.desc || '').replace(/,/g,';')}",${t.date}\n`;
+        });
         let a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `journal_${Date.now()}.csv`; a.click(); URL.revokeObjectURL(a.href);
     }
-
+    
     function importCSV() {
         let file = document.getElementById('csvFile').files[0];
         if (!file) { alert('Pilih file CSV'); return; }
         let reader = new FileReader();
         reader.onload = function(e) {
             let lines = e.target.result.split('\n');
-            let newTrades = [];
+            let newTx = [];
             for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
                 let parts = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
-                if (parts && parts.length >= 3) {
-                    let pair = (parts[0] || '').replace(/"/g, '').trim();
-                    let position = (parts[1] || '').replace(/"/g, '').trim();
-                    let pnl = parseFloat(parts[2]);
-                    let desc = (parts[4] || '').replace(/"/g, '').trim();
-                    if (pair && !isNaN(pnl)) newTrades.push({ id: Date.now() + i, pair, position: position === 'Buy' ? 'Buy' : 'Sell', pnl, desc: desc || '', date: parts[5] ? parts[5].replace(/"/g, '') : new Date().toLocaleString() });
+                if (parts && parts.length >= 2) {
+                    let type = parts[0].replace(/"/g, '');
+                    if (type === 'trade' && parts.length >= 5) {
+                        let pair = parts[1].replace(/"/g, '');
+                        let pos = parts[2].replace(/"/g, '');
+                        let pnl = parseFloat(parts[3]);
+                        let desc = (parts[5] || '').replace(/"/g, '');
+                        if (!isNaN(pnl)) newTx.push({ id: Date.now() + i, type: 'trade', pair, position: pos, pnl, desc, date: parts[6] ? parts[6].replace(/"/g, '') : new Date().toLocaleString() });
+                    } else if ((type === 'deposit' || type === 'withdraw') && parts.length >= 3) {
+                        let amount = parseFloat(parts[4]);
+                        let desc = (parts[5] || '').replace(/"/g, '');
+                        if (!isNaN(amount)) newTx.push({ id: Date.now() + i, type, amount, desc, date: parts[6] ? parts[6].replace(/"/g, '') : new Date().toLocaleString() });
+                    }
                 }
             }
-            if (newTrades.length) { trades = [...newTrades, ...trades]; save(); updateDashboard(); updateChart(); renderTable(); alert(`Import ${newTrades.length} trade`); document.getElementById('csvFile').value = ''; }
+            if (newTx.length) { transactions = [...newTx, ...transactions]; save(); updateDashboard(); updateChart(); renderTable(); alert(`Import ${newTx.length} record`); document.getElementById('csvFile').value = ''; }
             else alert('Tidak ada data valid');
         };
         reader.readAsText(file);
     }
-
+    
+    function showTab(tab) {
+        document.getElementById('tab-trade').style.display = tab === 'trade' ? 'block' : 'none';
+        document.getElementById('tab-deposit').style.display = tab === 'deposit' ? 'block' : 'none';
+        document.getElementById('tab-modal').style.display = tab === 'modal' ? 'block' : 'none';
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        if (tab === 'trade') document.querySelector('.tab-btn').classList.add('active');
+        if (tab === 'deposit') document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        if (tab === 'mgitodal') document.querySelectorAll('.tab-btn')[2].classList.add('active');
+    }
+    
     updateDashboard(); updateChart(); renderTable();
 </script>
 </body>
