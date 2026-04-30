@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📊 Complete Trading Journal + Deposit</title>
+    <title>📊 Complete Trading Journal + Lot & Deposit</title>
     <style>
         * {
             margin: 0;
@@ -125,7 +125,6 @@
         .btn-warning { background: linear-gradient(135deg, #ffaa00, #ff6600); }
         .btn-success { background: linear-gradient(135deg, #00ff88, #009955); }
         .btn-deposit { background: linear-gradient(135deg, #00d4ff, #0088aa); }
-        .btn-withdraw { background: linear-gradient(135deg, #ffaa00, #cc8800); }
 
         .chart-container {
             background: rgba(255, 255, 255, 0.05);
@@ -200,21 +199,18 @@
             margin-top: 8px;
         }
 
-        hr {
-            border-color: rgba(255, 255, 255, 0.1);
-            margin: 12px 0;
-        }
-
         .tabs {
             display: flex;
             gap: 5px;
             margin-bottom: 15px;
+            flex-wrap: wrap;
         }
         .tab-btn {
             background: rgba(255,255,255,0.1);
             padding: 8px 16px;
             border-radius: 8px;
             cursor: pointer;
+            font-size: 13px;
         }
         .tab-btn.active {
             background: linear-gradient(135deg, #00d4ff, #7b2cbf);
@@ -247,15 +243,17 @@
     <div id="tab-trade" class="form-section">
         <div class="form-title">➕ ADD TRADE</div>
         <div class="form-grid">
-            <input type="text" id="pair" placeholder="Pair" value="XAUUSD">
-            <select id="position">
+            <input type="text" id="pair" placeholder="Pair" value="XAUUSD" style="min-width:100px">
+            <select id="position" style="min-width:80px">
                 <option value="Buy">📈 Buy</option>
                 <option value="Sell">📉 Sell</option>
             </select>
-            <input type="number" id="pnl" placeholder="PnL ($)" step="0.01">
-            <textarea id="desc" placeholder="Catatan / setup (opsional)..." rows="1" style="min-width: 180px;"></textarea>
+            <input type="number" id="lot" placeholder="Lot (0.1 = 0.10)" step="0.01" value="0.1" style="min-width:100px">
+            <input type="number" id="pnl" placeholder="PnL ($)" step="0.01" style="min-width:100px">
+            <textarea id="desc" placeholder="Catatan / setup..." rows="1" style="min-width:150px"></textarea>
             <button onclick="addTrade()">➕ ADD TRADE</button>
         </div>
+        <div class="small-note">💡 Format LOT: 0.1 akan otomatis jadi 0.10 | 1 = 1.00</div>
     </div>
 
     <!-- Tab Deposit/Withdraw -->
@@ -267,7 +265,7 @@
                 <option value="withdraw">🏧 WITHDRAW (Tarik Modal)</option>
             </select>
             <input type="number" id="amount" placeholder="Jumlah ($)" step="10">
-            <textarea id="txDesc" placeholder="Catatan (bank, transfer, dll)..." rows="1" style="min-width: 180px;"></textarea>
+            <textarea id="txDesc" placeholder="Catatan (bank, transfer, dll)..." rows="1" style="min-width:180px;"></textarea>
             <button class="btn-deposit" onclick="addTransaction()">✅ PROCESS</button>
         </div>
         <div class="small-note">💡 Deposit menambah modal, Withdraw mengurangi modal. Tidak mempengaruhi statistik trading.</div>
@@ -310,7 +308,7 @@
     <!-- Table -->
     <div class="table-container">
         <table>
-            <thead><tr><th>Type</th><th>Pair/Desc</th><th>Detail</th><th>Amount</th><th>Impact</th><th>Date</th><th>Equity</th><th></th></tr></thead>
+            <thead><tr><th>Type</th><th>Pair</th><th>Pos/Lot</th><th>Amount</th><th>Result/Desc</th><th>Date</th><th>Equity</th><th></th></tr></thead>
             <tbody id="transactionTable"></tbody>
         </table>
     </div>
@@ -319,11 +317,17 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
     // DATA STRUCTURE
-    let transactions = JSON.parse(localStorage.getItem('completeTransactions')) || [];
-    let initialModal = parseFloat(localStorage.getItem('initialModal')) || 0;
+    let transactions = JSON.parse(localStorage.getItem('completeTransactionsLot')) || [];
+    let initialModal = parseFloat(localStorage.getItem('initialModalLot')) || 0;
     let chart;
 
-    // Helper untuk equity history
+    // Format lot ke 2 desimal
+    function formatLot(lot) {
+        if (lot === undefined || lot === null) return '0.00';
+        return parseFloat(lot).toFixed(2);
+    }
+
+    // Equity history
     function calculateEquityHistory() {
         let currentEquity = initialModal;
         let history = [{ equity: currentEquity, type: 'start' }];
@@ -391,7 +395,7 @@
         
         let history = calculateEquityHistory();
         let tbody = document.getElementById('transactionTable');
-        if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="8">No records</td></tr>'; return; }
+        if (filtered.length === 0) { tbody.innerHTML = '<td><td colspan="8">No records<td></tr>'; return; }
         
         tbody.innerHTML = filtered.map((tx, idx) => {
             let equityAtTx = 0;
@@ -401,12 +405,13 @@
             if (tx.type === 'trade') {
                 let cls = tx.pnl > 0 ? 'badge-win' : 'badge-loss';
                 let txt = tx.pnl > 0 ? 'WIN' : 'LOSS';
+                let lotDisplay = formatLot(tx.lot);
                 return `<tr>
                     <td><span class="badge-win" style="background:#7b2cbf22;color:#7b2cbf">📊 TRADE</span></td>
-                    <td>${tx.pair}</td>
-                    <td>${tx.position}</td>
+                    <td><strong>${tx.pair}</strong></td>
+                    <td>${tx.position}<br><small>Lot: ${lotDisplay}</small></td>
                     <td class="${tx.pnl > 0 ? 'profit' : 'loss'}">$${tx.pnl.toFixed(2)}</td>
-                    <td><span class="${cls}">${txt}</span> ${tx.desc ? '<br><small>' + tx.desc + '</small>' : ''}</td>
+                    <td><span class="${cls}">${txt}</span><br><small>${tx.desc || '-'}</small></td>
                     <td>${tx.date}</td>
                     <td>$${equityAtTx.toFixed(2)}</td>
                     <td><button class="action-btn" onclick="deleteTx(${tx.id})">🗑️</button></td>
@@ -428,17 +433,32 @@
         }).join('');
     }
 
-    function save() { localStorage.setItem('completeTransactions', JSON.stringify(transactions)); localStorage.setItem('initialModal', initialModal); }
+    function save() { localStorage.setItem('completeTransactionsLot', JSON.stringify(transactions)); localStorage.setItem('initialModalLot', initialModal); }
     
     function addTrade() {
         let pair = document.getElementById('pair').value.trim();
         let position = document.getElementById('position').value;
+        let lot = parseFloat(document.getElementById('lot').value);
         let pnl = parseFloat(document.getElementById('pnl').value);
         let desc = document.getElementById('desc').value.trim();
+        
         if (!pair || isNaN(pnl)) { alert('Isi Pair dan PnL!'); return; }
-        transactions.push({ id: Date.now(), type: 'trade', pair, position, pnl, desc: desc || '', date: new Date().toLocaleString() });
+        if (isNaN(lot) || lot <= 0) lot = 0.1;
+        
+        transactions.push({ 
+            id: Date.now(), 
+            type: 'trade', 
+            pair, 
+            position, 
+            lot: lot,
+            pnl, 
+            desc: desc || '', 
+            date: new Date().toLocaleString() 
+        });
         save();
-        document.getElementById('pnl').value = ''; document.getElementById('desc').value = '';
+        document.getElementById('pnl').value = ''; 
+        document.getElementById('desc').value = '';
+        document.getElementById('lot').value = '0.1';
         updateDashboard(); updateChart(); renderTable();
     }
     
@@ -462,10 +482,10 @@
     
     function exportData() {
         if (!transactions.length) { alert('Tidak ada data'); return; }
-        let csv = "Type,Pair,Position,PnL,Amount,Deskripsi,Date\n";
+        let csv = "Type,Pair,Position,Lot,PnL,Amount,Deskripsi,Date\n";
         transactions.forEach(t => {
-            if (t.type === 'trade') csv += `${t.type},${t.pair},${t.position},${t.pnl},,"${(t.desc || '').replace(/,/g,';')}",${t.date}\n`;
-            else csv += `${t.type},,,,${t.amount},"${(t.desc || '').replace(/,/g,';')}",${t.date}\n`;
+            if (t.type === 'trade') csv += `${t.type},${t.pair},${t.position},${formatLot(t.lot)},${t.pnl},,"${(t.desc || '').replace(/,/g,';')}",${t.date}\n`;
+            else csv += `${t.type},,,,0,${t.amount},"${(t.desc || '').replace(/,/g,';')}",${t.date}\n`;
         });
         let a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `journal_${Date.now()}.csv`; a.click(); URL.revokeObjectURL(a.href);
     }
@@ -481,16 +501,17 @@
                 let parts = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
                 if (parts && parts.length >= 2) {
                     let type = parts[0].replace(/"/g, '');
-                    if (type === 'trade' && parts.length >= 5) {
+                    if (type === 'trade' && parts.length >= 6) {
                         let pair = parts[1].replace(/"/g, '');
                         let pos = parts[2].replace(/"/g, '');
-                        let pnl = parseFloat(parts[3]);
-                        let desc = (parts[5] || '').replace(/"/g, '');
-                        if (!isNaN(pnl)) newTx.push({ id: Date.now() + i, type: 'trade', pair, position: pos, pnl, desc, date: parts[6] ? parts[6].replace(/"/g, '') : new Date().toLocaleString() });
-                    } else if ((type === 'deposit' || type === 'withdraw') && parts.length >= 3) {
-                        let amount = parseFloat(parts[4]);
-                        let desc = (parts[5] || '').replace(/"/g, '');
-                        if (!isNaN(amount)) newTx.push({ id: Date.now() + i, type, amount, desc, date: parts[6] ? parts[6].replace(/"/g, '') : new Date().toLocaleString() });
+                        let lot = parseFloat(parts[3]);
+                        let pnl = parseFloat(parts[4]);
+                        let desc = (parts[6] || '').replace(/"/g, '');
+                        if (!isNaN(pnl)) newTx.push({ id: Date.now() + i, type: 'trade', pair, position: pos, lot: isNaN(lot) ? 0.1 : lot, pnl, desc, date: parts[7] ? parts[7].replace(/"/g, '') : new Date().toLocaleString() });
+                    } else if ((type === 'deposit' || type === 'withdraw') && parts.length >= 4) {
+                        let amount = parseFloat(parts[5]);
+                        let desc = (parts[6] || '').replace(/"/g, '');
+                        if (!isNaN(amount)) newTx.push({ id: Date.now() + i, type, amount, desc, date: parts[7] ? parts[7].replace(/"/g, '') : new Date().toLocaleString() });
                     }
                 }
             }
@@ -507,7 +528,7 @@
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         if (tab === 'trade') document.querySelector('.tab-btn').classList.add('active');
         if (tab === 'deposit') document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        if (tab === 'mgitodal') document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        if (tab === 'modal') document.querySelectorAll('.tab-btn')[2].classList.add('active');
     }
     
     updateDashboard(); updateChart(); renderTable();
